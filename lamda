@@ -1,0 +1,152 @@
+//get his of customers
+const AWS = require("aws-sdk");
+const documentClient = new AWS.DynamoDB.DocumentClient();
+
+exports.handler = async event => {
+  const params = {
+    TableName: "customers" // The name of your DynamoDB table
+  };
+  try {
+    // Utilising the scan method to get all items in the table
+    const data = await documentClient.scan(params).promise();
+    const response = {
+      statusCode: 200,
+      body: JSON.stringify(data.Items)
+    };
+    return response;
+  } catch (e) {
+    return {
+      statusCode: 500
+    };
+  }
+};
+
+
+
+//Insert customer
+const AWS = require("aws-sdk");
+const crypto = require("crypto");
+
+// Generate unique id with no external dependencies
+const generateUUID = () => crypto.randomBytes(16).toString("hex");
+
+// Initialising the DynamoDB SDK
+const documentClient = new AWS.DynamoDB.DocumentClient();
+
+exports.handler = async event => {
+  const { name } = JSON.parse(event.body);
+  const { grade } = JSON.parse(event.body);
+  const params = {
+    TableName: "customers", // The name of your DynamoDB table
+    Item: { // Creating an Item with a unique id and with the passed title
+      cust_id: generateUUID(),
+      name: name,
+	  grade:grade
+    }
+  };
+  try {
+    
+    const data = await documentClient.put(params).promise();
+    const response = {
+      statusCode: 200
+    };
+    return response; // Returning a 200 if the item has been inserted 
+  } catch (e) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify(e)
+    };
+  }
+};
+
+//update customer.
+
+const AWS = require("aws-sdk");
+const documentClient = new AWS.DynamoDB.DocumentClient();
+
+exports.handler = async event => {
+  console.log(event);
+  
+  const {
+    pathParameters: { id }
+  } = event;
+  const { name } = JSON.parse(event.body);  
+  const { grade } = JSON.parse(event.body);
+  const params = {
+    TableName: "customers",
+    Item: {
+      "cust_id": id,
+      "name": name,
+	    "grade":grade
+    }
+  };
+  try {
+    const data = await documentClient.put(params).promise();
+    const response = {
+      statusCode: 200
+    };
+    return response;
+  } catch (e) {
+    return {
+      statusCode: 500,
+      body:JSON.stringify(e)
+    };
+  }
+};
+
+
+
+//get specific item
+const AWS = require("aws-sdk");
+const documentClient = new AWS.DynamoDB.DocumentClient();
+
+exports.handler = async event => {
+    
+  const {
+    pathParameters: { id }
+  } = event; // Extracting an id from the request path
+  
+  const params = {
+    TableName: "customers", // The name of your DynamoDB table
+    Key: { "cust_id" :id} // They key of the item you wish to find.
+  };
+  try {
+    // Utilising the get method to retrieve an indvidual item 
+    const data = await documentClient.get(params).promise();
+    const response = {
+      statusCode: 200,
+      body: JSON.stringify(data.Item)
+    };
+    return response;
+  } catch (e) {
+    return {
+      statusCode: 500
+    };
+  }
+};
+
+// delete
+const AWS = require("aws-sdk");
+const documentClient = new AWS.DynamoDB.DocumentClient();
+
+exports.handler = async event => {
+  const {
+    pathParameters: { id }
+  } = event;
+  const params = {
+    TableName: "customers",
+    Key: { id }
+  };
+  try {
+    const data = await documentClient.delete(params).promise();
+    const response = {
+      statusCode: 200
+    };
+    return response;
+  } catch (e) {
+    return {
+      statusCode: 500
+    };
+  }
+};
+
